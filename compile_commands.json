@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/oniichan/Documents/pong/build",
+  "command": "/usr/bin/c++   -std=gnu++2a -o CMakeFiles/pongchan.dir/src/main.cpp.o -c /home/oniichan/Documents/pong/src/main.cpp",
+  "file": "/home/oniichan/Documents/pong/src/main.cpp"
+}
+]
