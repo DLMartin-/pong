@@ -2,6 +2,8 @@
 #include <cstdio>
 #include <SDL2/SDL.h>
 
+#include <ecs/pool.h>
+
 int main(int argc, char** argv) {
 
   if(auto const r = SDL_Init(SDL_INIT_EVERYTHING); r != 0) {
