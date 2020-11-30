@@ -1,8 +1,26 @@
 #include <SDL2/SDL_keycode.h>
 #include <cstdio>
+#include <iostream>
 #include <SDL2/SDL.h>
 
-#include <ecs/pool.h>
+#include "ecs/componentpool.h"
+#include "ecs/entity.h"
+
+struct position_t {
+  float x;
+  float y;
+};
+
+struct collision_t {
+  float x1;
+  float x2;
+  float y1;
+  float y2;
+};
+
+struct sayer_t {
+  char message[16];
+};
 
 int main(int argc, char** argv) {
 
@@ -19,6 +37,29 @@ int main(int argc, char** argv) {
     std::puts("Could not create window or renderer.");
     return 2;
   } 
+  
+
+  ecs::entity_t e0{0u};
+  ecs::entity_t e1{1u};
+  ecs::entity_t e2{2u};
+
+
+  ecs::component_pool<position_t> positions;
+  ecs::component_pool<collision_t> collisions;
+  ecs::component_pool<sayer_t> sayers;
+
+
+  auto& pos1 = positions.add(e0);
+  pos1.x = 43;
+  pos1.y = 91;
+
+  auto& pos2 = positions.add(e1);
+  pos2.x = 19;
+  pos2.y = 192;
+
+  auto& pos3 = positions.add(e2);
+  pos3.x = 91;
+  pos3.y = 252;
 
   SDL_Event e{};
   while(1) {
@@ -31,6 +72,12 @@ int main(int argc, char** argv) {
         return 0;
       }
     }
+
+    std::cout << "--------------------------" << std::endl;
+    for(auto const& p : positions) {
+      std::cout << p.x << ", " << p.y << std::endl;
+    }
+    std::cout << "--------------------------" << std::endl;
 
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);

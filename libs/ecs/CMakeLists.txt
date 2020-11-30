@@ -4,5 +4,5 @@ project(ecs)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_library(ecs inc/ecs/pool.h src/pool.cpp)
+add_library(ecs inc/ecs/pool.h src/pool.cpp inc/ecs/objectpool.h inc/ecs/entity.h inc/ecs/componentpool.h)
 target_include_directories(ecs PUBLIC inc PRIVATE inc/ecs)
