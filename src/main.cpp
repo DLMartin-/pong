@@ -3,7 +3,7 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 
-#include "ecs/componentpool.h"
+#include "ecs/component_cache.h"
 #include "ecs/entity.h"
 
 struct position_t {
@@ -44,22 +44,18 @@ int main(int argc, char** argv) {
   ecs::entity_t e2{2u};
 
 
-  ecs::component_pool<position_t> positions;
-  ecs::component_pool<collision_t> collisions;
-  ecs::component_pool<sayer_t> sayers;
+  ecs::component_cache<position_t> positions;
+  ecs::component_cache<collision_t> collisions;
+  ecs::component_cache<sayer_t> sayers;
 
+  auto pos1 = position_t{.x = 15.0f, .y=190.0f};
+  auto pos2 = position_t{.x = 91.0f, .y=11.0f};
+  auto pos3 = position_t{.x = 481.0f, .y=592.0f};
 
-  auto& pos1 = positions.add(e0);
-  pos1.x = 43;
-  pos1.y = 91;
+  positions.insert(e0, pos1);
+  positions.insert(e1, pos2);
+  //positions.insert(e2, pos3);
 
-  auto& pos2 = positions.add(e1);
-  pos2.x = 19;
-  pos2.y = 192;
-
-  auto& pos3 = positions.add(e2);
-  pos3.x = 91;
-  pos3.y = 252;
 
   SDL_Event e{};
   while(1) {
