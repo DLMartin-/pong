@@ -1,18 +1,15 @@
 #ifndef ECS_OBJECT_POOL_H_
 #define ECS_OBJECT_POOL_H_
-#include <cstddef>
+#include <cstdint>
 #include <memory>
 
 namespace ecs {
-  template<typename T, std::size_t N = 256>
+  template<typename T, std::uint16_t N = 256>
   class object_pool {
     public:
 
-      [[nodiscard]] T* create() {
-        if(pool_end_ < end_) [[likely]] {
-          return &data_.get()[pool_end_++];
-        }
-        return nullptr;
+      [[nodiscard]] T& create() {
+        return data_.get()[pool_end_++];
       }
 
       std::pair<std::size_t, std::size_t> destroy(std::size_t index) {
@@ -20,11 +17,8 @@ namespace ecs {
         return {index, pool_end_};
       }
 
-      [[nodiscard]] T* get(std::size_t index) const noexcept {
-        if(index < end_) [[likely]] {
-          return data_.get() + index;
-        }
-        return nullptr;
+      [[nodiscard]] T& get(std::size_t index) const noexcept {
+        return data_.get()[index];
       }
 
       [[nodiscard]] inline std::size_t size() const noexcept {

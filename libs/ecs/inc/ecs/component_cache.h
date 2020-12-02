@@ -1,22 +1,22 @@
 #ifndef ECS_COMPONENT_CACHE_H_
 #define ECS_COMPONENT_CACHE_H_
-#include <cstddef>
+#include <cstdint>
 #include <unordered_map>
 
 #include "object_pool.h"
 #include "entity.h"
 
 namespace ecs {
-  template<typename T, std::size_t N=256>
+  template<typename T, std::uint16_t N=256>
   class component_cache {
     public:
 
       void insert(ecs::entity_t entity, T const& component) noexcept {
-        auto data = component_pool_.create();
-        if(data != nullptr) [[likely]] {
+        if(is_valid(entity)) [[likely]] {
+          auto& data = component_pool_.create();
           component_lookup_table_[entity] = component_pool_.size();
           entity_lookup_table_[component_pool_.size()] = entity;
-          *data = component;
+          data = component; 
         }
       }
 
@@ -29,14 +29,8 @@ namespace ecs {
       }
 
       [[nodiscard]] T& get(ecs::entity_t entity) noexcept {
-        static T bogus_component {};
         auto const component_index = component_lookup_table_[entity];
-        auto component = component_pool_.get(component_index);
-        if(component != nullptr) [[likely]] {
-          return *component;
-        } 
-
-        return bogus_component;
+        return component_pool_.get(component_index);
       }
 
       [[nodiscard]] inline std::size_t size() const noexcept {
@@ -60,7 +54,7 @@ namespace ecs {
       }
 
     private:
-      object_pool<T, N> component_pool_;
+      object_pool<T, N> component_pool_ {};
       std::unordered_map<ecs::entity_t, std::size_t> component_lookup_table_ {};
       std::unordered_map<std::size_t, ecs::entity_t> entity_lookup_table_ {};
   };
