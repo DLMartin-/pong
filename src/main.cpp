@@ -5,6 +5,7 @@
 
 #include "ecs/component_cache.h"
 #include "ecs/entity.h"
+#include "ecs/entity_factory.h"
 
 struct position_t {
   float x;
@@ -38,10 +39,11 @@ int main(int argc, char** argv) {
     return 2;
   } 
   
+  ecs::entity_factory entity_factory{};
 
-  ecs::entity_t e0{0u};
-  ecs::entity_t e1{1u};
-  ecs::entity_t e2{2u};
+  auto const e0 = entity_factory.generate();
+  auto const e1 = entity_factory.generate();
+  auto const e2 = entity_factory.generate();
 
   ecs::component_cache<position_t> positions;
   ecs::component_cache<collision_t> collisions;
