@@ -43,7 +43,6 @@ int main(int argc, char** argv) {
   ecs::entity_t e1{1u};
   ecs::entity_t e2{2u};
 
-
   ecs::component_cache<position_t> positions;
   ecs::component_cache<collision_t> collisions;
   ecs::component_cache<sayer_t> sayers;
@@ -54,8 +53,7 @@ int main(int argc, char** argv) {
 
   positions.insert(e0, pos1);
   positions.insert(e1, pos2);
-  //positions.insert(e2, pos3);
-
+  positions.insert(e2, pos3);
 
   SDL_Event e{};
   while(1) {

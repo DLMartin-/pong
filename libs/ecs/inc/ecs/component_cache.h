@@ -14,8 +14,8 @@ namespace ecs {
       void insert(ecs::entity_t entity, T const& component) noexcept {
         if(is_valid(entity)) [[likely]] {
           auto& data = component_pool_.create();
-          component_lookup_table_[entity] = component_pool_.size();
-          entity_lookup_table_[component_pool_.size()] = entity;
+          component_lookup_table_[entity] = component_pool_.size() - 1;
+          entity_lookup_table_[component_pool_.size() - 1] = entity;
           data = component; 
         }
       }
@@ -54,7 +54,7 @@ namespace ecs {
       }
 
     private:
-      object_pool<T, N> component_pool_ {};
+      object_pool<T, N> component_pool_{};
       std::unordered_map<ecs::entity_t, std::size_t> component_lookup_table_ {};
       std::unordered_map<std::size_t, ecs::entity_t> entity_lookup_table_ {};
   };

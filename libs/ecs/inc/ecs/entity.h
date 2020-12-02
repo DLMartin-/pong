@@ -20,7 +20,7 @@ namespace ecs {
   }
 
   inline bool is_valid(entity_t entity) noexcept {
-    return static_cast<std::uint32_t>(entity) & entity_index_bitmask;
+    return (static_cast<std::uint32_t>(entity) & entity_invalid_bitmask) != entity_invalid_bitmask;
   }
 }
 #endif
