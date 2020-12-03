@@ -70,9 +70,12 @@ int main(int argc, char** argv) {
     }
 
     std::cout << "--------------------------" << std::endl;
-    for(auto const& p : positions) {
-      std::cout << p.x << ", " << p.y << std::endl;
-    }
+    //for(auto const& p : positions) {
+    //  std::cout << p.x << ", " << p.y << std::endl;
+    //}
+    std::cout << positions.get(e0).x << ", " << positions.get(e0).y << std::endl;
+    std::cout << positions.get(e1).x << ", " << positions.get(e1).y << std::endl;
+    std::cout << positions.get(e2).x << ", " << positions.get(e2).y << std::endl;
     std::cout << "--------------------------" << std::endl;
 
     SDL_RenderClear(renderer);
