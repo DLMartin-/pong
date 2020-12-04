@@ -63,12 +63,13 @@ int main(int argc, char** argv) {
   positions.insert(e0, pos1);
   positions.insert(e1, pos2);
   positions.insert(e2, pos3);
-  if(!IMG_Init(IMG_INIT_PNG)) {
+  if(IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
+    std::cout << "Hello" << std::endl;
     std::cout << IMG_GetError() << std::endl;
   }
 
 
-  SDL_Texture* tex = IMG_LoadTexture(renderer, "res/ball.png");
+  SDL_Texture* tex = IMG_LoadTexture(renderer, "./res/ball.png");
   if(!tex) {
     std::cout << IMG_GetError() << std::endl;
   }
