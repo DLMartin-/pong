@@ -1,26 +1,35 @@
-#include <SDL2/SDL_keycode.h>
+#include <SDL2/SDL_render.h>
 #include <cstdio>
 #include <iostream>
 #include <SDL2/SDL.h>
-
 #include "ecs/component_cache.h"
 #include "ecs/entity.h"
 #include "ecs/entity_factory.h"
+#include <SDL2/SDL_image.h>
 
 struct position_t {
   float x;
   float y;
 };
 
-struct collision_t {
-  float x1;
-  float x2;
-  float y1;
-  float y2;
+struct physics_body_t {
+  struct bounding_box_t {
+    float x0;
+    float y0;
+    float x1;
+    float y1;
+  };
+  bounding_box_t bbox;
+  float velocity_x;
+  float velocity_y;
 };
 
-struct sayer_t {
-  char message[16];
+struct point_value_t {
+  unsigned int value;
+};
+
+struct sprite_t {
+  SDL_Texture* texture;
 };
 
 int main(int argc, char** argv) {
@@ -46,16 +55,23 @@ int main(int argc, char** argv) {
   auto const e2 = entity_factory.generate();
 
   ecs::component_cache<position_t> positions;
-  ecs::component_cache<collision_t> collisions;
-  ecs::component_cache<sayer_t> sayers;
 
   auto pos1 = position_t{.x = 15.0f, .y=190.0f};
   auto pos2 = position_t{.x = 91.0f, .y=11.0f};
-  auto pos3 = position_t{.x = 481.0f, .y=592.0f};
+  auto pos3 = position_t{.x = 201.0f, .y=92.0f};
 
   positions.insert(e0, pos1);
   positions.insert(e1, pos2);
   positions.insert(e2, pos3);
+  if(!IMG_Init(IMG_INIT_PNG)) {
+    std::cout << IMG_GetError() << std::endl;
+  }
+
+
+  SDL_Texture* tex = IMG_LoadTexture(renderer, "res/ball.png");
+  if(!tex) {
+    std::cout << IMG_GetError() << std::endl;
+  }
 
   SDL_Event e{};
   while(1) {
@@ -69,16 +85,15 @@ int main(int argc, char** argv) {
       }
     }
 
-    std::cout << "--------------------------" << std::endl;
-    //for(auto const& p : positions) {
-    //  std::cout << p.x << ", " << p.y << std::endl;
-    //}
-    std::cout << positions.get(e0).x << ", " << positions.get(e0).y << std::endl;
-    std::cout << positions.get(e1).x << ", " << positions.get(e1).y << std::endl;
-    std::cout << positions.get(e2).x << ", " << positions.get(e2).y << std::endl;
-    std::cout << "--------------------------" << std::endl;
-
     SDL_RenderClear(renderer);
+
+    SDL_Rect rect {};
+    rect.x = pos1.x;
+    rect.y = pos1.y;
+    rect.h = 32;
+    rect.w = 32;
+    SDL_RenderCopy(renderer, tex, &rect, nullptr);
+
     SDL_RenderPresent(renderer);
     } 
   }

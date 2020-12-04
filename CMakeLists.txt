@@ -8,5 +8,5 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_subdirectory(libs)
 
 add_executable(pongchan src/main.cpp)
-target_link_libraries(pongchan SDL2)
+target_link_libraries(pongchan z png SDL2_image SDL2)
 target_link_libraries(pongchan ecs)
