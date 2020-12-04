@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  auto const window = SDL_CreateWindow("Pongchan", 0, 0, 240, 350, 0);
+  auto const window = SDL_CreateWindow("Pongchan", 0, 0, 700, 1440, 0);
 
   auto const renderer = SDL_CreateRenderer(window, -1, 0);
 
@@ -70,6 +70,7 @@ int main(int argc, char** argv) {
 
 
   SDL_Texture* tex = IMG_LoadTexture(renderer, "./res/ball.png");
+
   if(!tex) {
     std::cout << IMG_GetError() << std::endl;
   }
@@ -86,14 +87,15 @@ int main(int argc, char** argv) {
       }
     }
 
-    SDL_RenderClear(renderer);
 
+    SDL_Rect screen_rect {.x = 0, .y = 0, .w = 700, .h = 1440};
     SDL_Rect rect {};
-    rect.x = pos1.x;
-    rect.y = pos1.y;
+    rect.x = 40;
+    rect.y = 40;
     rect.h = 32;
     rect.w = 32;
-    SDL_RenderCopy(renderer, tex, &rect, nullptr);
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, tex, nullptr, &screen_rect);
 
     SDL_RenderPresent(renderer);
     } 
