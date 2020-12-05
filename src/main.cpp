@@ -6,6 +6,7 @@
 #include "ecs/entity.h"
 #include "ecs/entity_factory.h"
 #include <SDL2/SDL_image.h>
+#include <vector>
 
 struct position_t {
   float x;
@@ -32,6 +33,33 @@ struct sprite_t {
   SDL_Texture* texture;
 };
 
+
+void check_edge_of_screen_collisions(const std::vector<ecs::entity_t>& entities, const ecs::component_cache<position_t>& positions, const ecs::component_cache<physics_body_t>& physics_bodies) {
+  for(auto const& e : entities) {
+    auto const& pos = positions.get(e);
+    if(pos.x <= 0.0f ||pos.x >= 700) {
+      //collision with screen edge
+      auto& pbody = physics_bodies.get(e);
+      pbody.velocity_x = -pbody.velocity_x;
+    }
+
+    if(pos.y <= 0.0f || pos.y >= 1440) {
+      auto& pbody = physics_bodies.get(e);
+      pbody.velocity_y = -pbody.velocity_y;
+    }
+  }
+}
+
+void apply_physics(const std::vector<ecs::entity_t>& entities, const ecs::component_cache<position_t>& positions, const ecs::component_cache<physics_body_t>& physics_bodies, float dt) {
+  for(auto const& e : entities) {
+    auto& pos = positions.get(e);
+    auto const& pbody = physics_bodies.get(e);
+
+    pos.x += (pbody.velocity_x * dt);
+    pos.y += (pbody.velocity_y * dt);
+  }
+}
+
 int main(int argc, char** argv) {
 
   if(auto const r = SDL_Init(SDL_INIT_EVERYTHING); r != 0) {
@@ -49,20 +77,16 @@ int main(int argc, char** argv) {
   } 
   
   ecs::entity_factory entity_factory{};
+  ecs::component_cache<position_t> positions;
+  ecs::component_cache<physics_body_t> pbodies;
 
   auto const e0 = entity_factory.generate();
-  auto const e1 = entity_factory.generate();
-  auto const e2 = entity_factory.generate();
+  auto pos = position_t{.x = 15.0f, .y=190.0f};
+  positions.insert(e0, pos);
 
-  ecs::component_cache<position_t> positions;
+  auto pbody = physics_body_t{.bbox = {.x0 = 0.0f, .y0=0.0f, .x1 = 32.0f, .y1 = 32.0f}, .velocity_x = 4.3f, .velocity_y = 3.1f};
+  pbodies.insert(e0, pbody);
 
-  auto pos1 = position_t{.x = 15.0f, .y=190.0f};
-  auto pos2 = position_t{.x = 91.0f, .y=11.0f};
-  auto pos3 = position_t{.x = 201.0f, .y=92.0f};
-
-  positions.insert(e0, pos1);
-  positions.insert(e1, pos2);
-  positions.insert(e2, pos3);
   if(IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
     std::cout << "Hello" << std::endl;
     std::cout << IMG_GetError() << std::endl;
@@ -77,28 +101,30 @@ int main(int argc, char** argv) {
 
   SDL_Event e{};
   while(1) {
-  while(SDL_PollEvent(&e)) {
-    if(e.type == SDL_KEYDOWN) {
-      if(e.key.keysym.sym == SDLK_ESCAPE) {
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return 0;
+
+    auto draw_func = [e0, &positions, &pbodies, renderer, tex] {
+      auto const& pos = positions.get(e0);
+      auto const& pbody = pbodies.get(e0);
+ 
+      SDL_Rect screen_rect {.x = static_cast<int>(pos.x), .y = static_cast<int>(pos.y), .w = static_cast<int>(pbody.bbox.x1), .h =static_cast<int>( pbody.bbox.y1)};
+      SDL_RenderCopy(renderer, tex, nullptr, &screen_rect);
+    };
+  
+    while(SDL_PollEvent(&e)) {
+      if(e.type == SDL_KEYDOWN) {
+        if(e.key.keysym.sym == SDLK_ESCAPE) {
+          SDL_DestroyRenderer(renderer);
+          SDL_DestroyWindow(window);
+          SDL_Quit();
+          return 0;
+        }
       }
     }
-
-
-    SDL_Rect screen_rect {.x = 0, .y = 0, .w = 700, .h = 1440};
-    SDL_Rect rect {};
-    rect.x = 40;
-    rect.y = 40;
-    rect.h = 32;
-    rect.w = 32;
     SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, tex, nullptr, &screen_rect);
-
+    apply_physics({e0}, positions, pbodies, 1.0f);
+    check_edge_of_screen_collisions({e0}, positions, pbodies);
+    draw_func();
     SDL_RenderPresent(renderer);
-    } 
-  }
+  } 
   return 0;
 }
