@@ -36,15 +36,15 @@ struct sprite_t {
 
 void check_edge_of_screen_collisions(const std::vector<ecs::entity_t>& entities, const ecs::component_cache<position_t>& positions, const ecs::component_cache<physics_body_t>& physics_bodies) {
   for(auto const& e : entities) {
-    auto const& pos = positions.get(e);
+    auto const& pos = positions[e];
     if(pos.x <= 0.0f ||pos.x >= 700) {
       //collision with screen edge
-      auto& pbody = physics_bodies.get(e);
+      auto& pbody = physics_bodies[e];
       pbody.velocity_x = -pbody.velocity_x;
     }
 
     if(pos.y <= 0.0f || pos.y >= 1440) {
-      auto& pbody = physics_bodies.get(e);
+      auto& pbody = physics_bodies[e];
       pbody.velocity_y = -pbody.velocity_y;
     }
   }
@@ -52,8 +52,8 @@ void check_edge_of_screen_collisions(const std::vector<ecs::entity_t>& entities,
 
 void apply_physics(const std::vector<ecs::entity_t>& entities, const ecs::component_cache<position_t>& positions, const ecs::component_cache<physics_body_t>& physics_bodies, float dt) {
   for(auto const& e : entities) {
-    auto& pos = positions.get(e);
-    auto const& pbody = physics_bodies.get(e);
+    auto& pos = positions[e];
+    auto const& pbody = physics_bodies[e];
 
     pos.x += (pbody.velocity_x * dt);
     pos.y += (pbody.velocity_y * dt);
@@ -82,10 +82,10 @@ int main(int argc, char** argv) {
 
   auto const e0 = entity_factory.generate();
   auto pos = position_t{.x = 15.0f, .y=190.0f};
-  positions.insert(e0, pos);
+  positions[e0] = pos;
 
   auto pbody = physics_body_t{.bbox = {.x0 = 0.0f, .y0=0.0f, .x1 = 32.0f, .y1 = 32.0f}, .velocity_x = 4.3f, .velocity_y = 3.1f};
-  pbodies.insert(e0, pbody);
+  pbodies[e0] = pbody;
 
   if(IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
     std::cout << "Hello" << std::endl;
@@ -103,8 +103,8 @@ int main(int argc, char** argv) {
   while(1) {
 
     auto draw_func = [e0, &positions, &pbodies, renderer, tex] {
-      auto const& pos = positions.get(e0);
-      auto const& pbody = pbodies.get(e0);
+      auto const& pos = positions[e0];
+      auto const& pbody = pbodies[e0];
  
       SDL_Rect screen_rect {.x = static_cast<int>(pos.x), .y = static_cast<int>(pos.y), .w = static_cast<int>(pbody.bbox.x1), .h =static_cast<int>( pbody.bbox.y1)};
       SDL_RenderCopy(renderer, tex, nullptr, &screen_rect);
