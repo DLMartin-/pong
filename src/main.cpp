@@ -8,6 +8,8 @@
 #include <SDL2/SDL_image.h>
 #include <vector>
 
+#include "ecs/world.h"
+
 struct position_t {
   float x;
   float y;
@@ -98,6 +100,9 @@ int main(int argc, char** argv) {
   if(!tex) {
     std::cout << IMG_GetError() << std::endl;
   }
+
+  ecs::world w{};
+  auto en = w.create_entity();
 
   SDL_Event e{};
   while(1) {

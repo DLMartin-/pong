@@ -6,7 +6,12 @@
 },
 {
   "directory": "/home/oniichan/Documents/pong/build/libs/ecs",
-  "command": "/usr/bin/c++  -I/home/oniichan/Documents/pong/libs/ecs/inc -I/home/oniichan/Documents/pong/libs/ecs/inc/ecs -std=gnu++2a -o CMakeFiles/ecs.dir/src/pool.cpp.o -c /home/oniichan/Documents/pong/libs/ecs/src/pool.cpp",
-  "file": "/home/oniichan/Documents/pong/libs/ecs/src/pool.cpp"
+  "command": "/usr/bin/c++  -I/home/oniichan/Documents/pong/libs/ecs/inc -I/home/oniichan/Documents/pong/libs/ecs/inc/ecs -std=gnu++2a -o CMakeFiles/ecs.dir/src/entity.cpp.o -c /home/oniichan/Documents/pong/libs/ecs/src/entity.cpp",
+  "file": "/home/oniichan/Documents/pong/libs/ecs/src/entity.cpp"
+},
+{
+  "directory": "/home/oniichan/Documents/pong/build/libs/ecs",
+  "command": "/usr/bin/c++  -I/home/oniichan/Documents/pong/libs/ecs/inc -I/home/oniichan/Documents/pong/libs/ecs/inc/ecs -std=gnu++2a -o CMakeFiles/ecs.dir/src/world.cpp.o -c /home/oniichan/Documents/pong/libs/ecs/src/world.cpp",
+  "file": "/home/oniichan/Documents/pong/libs/ecs/src/world.cpp"
 }
 ]
