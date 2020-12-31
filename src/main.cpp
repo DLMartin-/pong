@@ -79,6 +79,8 @@ int main(int argc, char** argv) {
   components.get_component<position_t>(e0).y = 215.0f;
   std::cout << "Position in component store:" << components.get_component<position_t>(e0).x << ", " << components.get_component<position_t>(e0).y << " \n";
 
+  auto const position_component = components.get_component<position_t>(e0);
+  auto const sprite_component = components.get_component<sprite_t>(e0);
   while(1) {
     while(SDL_PollEvent(&e)) {
       if(e.type == SDL_KEYDOWN) {
@@ -91,7 +93,8 @@ int main(int argc, char** argv) {
       }
     }
     SDL_RenderClear(renderer);
-    
+    SDL_Rect pos_rect{.x =static_cast<int>(position_component.x), .y = static_cast<int>(position_component.y), .w = 150, .h = 150};
+    SDL_RenderCopy(renderer, sprite_component.texture, nullptr, &pos_rect); 
     SDL_RenderPresent(renderer);
   } 
   return 0;
