@@ -1,6 +1,8 @@
 #ifndef ECS_INC_ECS_CONTAINERS_ARRAY_H
 #define ECS_INC_ECS_CONTAINERS_ARRAY_H
 #include <cstdint>
+#include <iterator>
+#include <iostream>
 
 namespace acorn {
 namespace ecs {
@@ -28,7 +30,7 @@ class array {
     }
 
     T* end() const noexcept {
-      return data_[255];
+      return data_ + 255;
     }
 
   private:
