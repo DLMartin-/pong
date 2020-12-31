@@ -19,6 +19,10 @@ class array {
       return data_[index];
     }
 
+    [[nodiscard]] inline T& get(size_type index) const noexcept {
+      return data_[index];
+    }
+
     T* begin() const noexcept {
       return data_;
     }

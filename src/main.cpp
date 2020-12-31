@@ -5,6 +5,9 @@
 #include <SDL2/SDL_image.h>
 #include <vector>
 
+#include "ecs/types.h"
+#include "ecs/component_store.h"
+
 struct position_t {
   float x;
   float y;
@@ -60,6 +63,22 @@ int main(int argc, char** argv) {
   }
 
   SDL_Event e{};
+
+  acorn::ecs::entity_t e0{0};
+  acorn::ecs::component_store components {};
+
+
+  position_t pos{ .x = 200.0f, .y = 320.0f};
+  sprite_t sprite{.texture = tex};
+
+  components.insert_component(e0, pos);
+  components.insert_component(e0, sprite);
+
+  std::cout << "Position in component store:" << components.get_component<position_t>(e0).x << ", " << components.get_component<position_t>(e0).y << " \n";
+  components.get_component<position_t>(e0).x = 15.0f;
+  components.get_component<position_t>(e0).y = 215.0f;
+  std::cout << "Position in component store:" << components.get_component<position_t>(e0).x << ", " << components.get_component<position_t>(e0).y << " \n";
+
   while(1) {
     while(SDL_PollEvent(&e)) {
       if(e.type == SDL_KEYDOWN) {
