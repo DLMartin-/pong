@@ -14,26 +14,14 @@ struct position_t {
   float y;
 };
 
-struct physics_body_t {
-  struct bounding_box_t {
-    float x0;
-    float y0;
-    float x1;
-    float y1;
-  };
-  bounding_box_t bbox;
-  float velocity_x;
-  float velocity_y;
+struct velocity_t {
+  float x;
+  float y;
 };
 
-struct point_value_t {
-  unsigned int value;
-};
-
-struct sprite_t {
+struct texture_t {
   SDL_Texture* texture;
 };
-
 
 int main(int argc, char** argv) {
 
@@ -64,31 +52,61 @@ int main(int argc, char** argv) {
   }
 
   SDL_Event e{};
-
   acorn::ecs::entity_pool pool{};
-  acorn::ecs::entity_t e0 = pool.create_entity();
-  acorn::ecs::entity_t e1 = pool.create_entity();
   acorn::ecs::component_store components {};
 
+  auto const ball = pool.create_entity();
 
-  position_t pos{ .x = 200.0f, .y = 320.0f};
-  sprite_t sprite{.texture = tex};
 
-  components.insert_component(e0, pos);
-  components.insert_component(e0, sprite);
+  //setup ball
+  position_t ball_position {.x = 15.f, .y = 15.f};
+  components.insert_component(ball, ball_position);
 
-  position_t pos2{.x = 25.0f, .y = 100.0f};
-  components.insert_component(e1, pos2);
-  components.insert_component(e1, sprite);
+  velocity_t ball_velocity {.x = .09f, .y = .25f};
+  components.insert_component(ball, ball_velocity);
 
-  auto const position_component = components.get_component<position_t>(e0);
-  auto const position_component2 = components.get_component<position_t>(e1);
-  auto const sprite_component = components.get_component<sprite_t>(e0);
-  auto const sprite_component2 = components.get_component<sprite_t>(e1);
-  point_value_t pvc { .value = 0 };
-  int i = 1;
+  texture_t ball_texture {.texture = tex};
+  components.insert_component(ball, ball_texture);
+
+  auto const ball_physics_system = [&components, ball]{
+    auto& ball_position = components.get_component<position_t>(ball);
+    auto const& ball_velocity = components.get_component<velocity_t>(ball);
+
+    ball_position.x += ball_velocity.x;
+    ball_position.y += ball_velocity.y;
+  };
+
+  auto const ball_check_boundary_collision_system = [&components, ball] {
+    auto& ball_position = components.get_component<position_t>(ball);
+    auto& ball_velocity = components.get_component<velocity_t>(ball);
+
+    if(ball_position.x < 0) {
+      ball_position.x = 0;
+      ball_velocity.x *= -1;
+    } else if (ball_position.x > 700) {
+      ball_position.x = 700;
+      ball_velocity.x *= -1;
+    }
+
+    if(ball_position.y < 0) {
+      ball_position.y = 0;
+      ball_velocity.y *= -1;
+    } else if(ball_position.y > 1440) {
+      ball_position.y = 1440;
+      ball_velocity.y *= -1;
+    }
+
+  };
+
+  auto const render_ball_system = [&components, ball, renderer] {
+    auto const ball_texture = components.get_component<texture_t>(ball);
+    auto const ball_position = components.get_component<position_t>(ball);
+
+    auto const rect = SDL_Rect{.x = static_cast<int>(ball_position.x), .y = static_cast<int>(ball_position.y), .w = 50, .h = 50};
+    SDL_RenderCopy(renderer, ball_texture.texture, nullptr, &rect);
+  };
+
   while(1) {
-    ++i;
     while(SDL_PollEvent(&e)) {
       if(e.type == SDL_KEYDOWN) {
         if(e.key.keysym.sym == SDLK_ESCAPE) {
@@ -99,21 +117,12 @@ int main(int argc, char** argv) {
         }
       }
     }
+
+    ball_physics_system();
+    ball_check_boundary_collision_system();
+
     SDL_RenderClear(renderer);
-    
-    SDL_Rect pos_rect{.x =static_cast<int>(position_component.x), .y = static_cast<int>(position_component.y), .w = 150, .h = 150};
-    SDL_Rect pos_rect2{.x =static_cast<int>(position_component2.x), .y = static_cast<int>(position_component2.y), .w = 50, .h = 50};
-    if(components.has_component<point_value_t>(e0)) {
-      if(i % 200 == 0) {
-        components.remove_component<point_value_t>(e0);
-      }
-      SDL_RenderCopy(renderer, sprite_component.texture, nullptr, &pos_rect); 
-    } else {
-      if(i % 200 == 0) {
-        components.insert_component(e0, pvc);
-      }
-    }
-    SDL_RenderCopy(renderer, sprite_component2.texture, nullptr, &pos_rect2); 
+    render_ball_system(); 
     SDL_RenderPresent(renderer);
   } 
   return 0;
