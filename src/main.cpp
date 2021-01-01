@@ -63,7 +63,28 @@ int main(int argc, char** argv) {
   acorn::ecs::component_store components {};
 
   auto const ball = pool.create_entity();
+  auto const paddle_one = pool.create_entity();
+  auto const paddle_two = pool.create_entity();
 
+  //setup paddle one
+  position_t paddle_one_position {.x = 15.f, .y = 1340.f};
+  components.insert_component(paddle_one, paddle_one_position);
+
+  bounding_box_t paddle_one_bounding_box {.x = 15.f, .y = 1340.f, .w = 300.f, .h = 35.f};
+  components.insert_component(paddle_one, paddle_one_bounding_box);
+
+  texture_t paddle_one_texture {.texture = tex};
+  components.insert_component(paddle_one, paddle_one_texture);
+
+  //setup paddle two
+  position_t paddle_two_position {.x = 15.f, .y = 100.f};
+  components.insert_component(paddle_two, paddle_two_position);
+
+  bounding_box_t paddle_two_bounding_box {.x = 15.f, .y = 100.f, .w = 300.f, .h = 35.f};
+  components.insert_component(paddle_two, paddle_two_bounding_box);
+
+  texture_t paddle_two_texture {.texture = tex};
+  components.insert_component(paddle_two, paddle_two_texture);
 
   //setup ball
   position_t ball_position {.x = 15.f, .y = 15.f};
@@ -124,6 +145,22 @@ int main(int argc, char** argv) {
     SDL_RenderCopy(renderer, ball_texture.texture, nullptr, &rect);
   };
 
+  auto const render_paddle_one_system = [&components, paddle_one, renderer] {
+    auto const paddle_one_texture = components.get_component<texture_t>(paddle_one);
+    auto const paddle_one_position = components.get_component<position_t>(paddle_one);
+
+    auto const rect = SDL_Rect{.x = static_cast<int>(paddle_one_position.x), .y = static_cast<int>(paddle_one_position.y), .w = 300, .h = 35};
+    SDL_RenderCopy(renderer, paddle_one_texture.texture, nullptr, &rect);
+  };
+
+  auto const render_paddle_two_system = [&components, paddle_two, renderer] {
+    auto const paddle_two_texture = components.get_component<texture_t>(paddle_two);
+    auto const paddle_two_position = components.get_component<position_t>(paddle_two);
+
+    auto const rect = SDL_Rect{.x = static_cast<int>(paddle_two_position.x), .y = static_cast<int>(paddle_two_position.y), .w = 300, .h = 35};
+    SDL_RenderCopy(renderer, paddle_two_texture.texture, nullptr, &rect);
+  };
+
   auto const render_pong_debug_system = [&components, ball, renderer] {
     auto const ball_bounding_box = components.get_component<bounding_box_t>(ball);
 
@@ -151,6 +188,8 @@ int main(int argc, char** argv) {
 
     SDL_RenderClear(renderer);
     render_ball_system(); 
+    render_paddle_one_system();
+    render_paddle_two_system();
     render_pong_debug_system();
     SDL_RenderPresent(renderer);
   } 
