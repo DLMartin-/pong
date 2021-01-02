@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
   components.insert_component(paddle_two, paddle_two_texture);
 
   //setup ball
-  position_t ball_position {.x = 15.f, .y = 15.f};
+  position_t ball_position {.x = 15.f, .y = 300.f};
   components.insert_component(ball, ball_position);
 
   velocity_t ball_velocity {.x = .09f, .y = .25f};
@@ -171,6 +171,40 @@ int main(int argc, char** argv) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
   };
 
+  auto const render_paddle_debug_system = [&components, renderer](acorn::ecs::entity_t paddle) {
+    auto const bounding_box = components.get_component<bounding_box_t>(paddle);
+
+    auto const rect = SDL_Rect{.x = static_cast<int>(bounding_box.x), .y = static_cast<int>(bounding_box.y), .w = static_cast<int>(bounding_box.w), .h = static_cast<int>(bounding_box.h)};
+
+    SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
+    SDL_RenderDrawRect(renderer, &rect);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+  };
+
+
+  auto const check_ball_collision_with_paddle_system = [&components, ball, paddle_one, paddle_two] {
+    auto const check_collision = [&components, ball](acorn::ecs::entity_t paddle) {
+      auto& ball_bounding_box = components.get_component<bounding_box_t>(ball);
+      auto& ball_velocity = components.get_component<velocity_t>(ball);
+      auto& ball_position = components.get_component<position_t>(ball);
+
+      auto const& paddle_bounding_box = components.get_component<bounding_box_t>(paddle);
+
+      if((ball_bounding_box.x < paddle_bounding_box.x + paddle_bounding_box.w && 
+          ball_bounding_box.x + ball_bounding_box. w > paddle_bounding_box.x &&
+          ball_bounding_box.y < paddle_bounding_box.y + paddle_bounding_box.h &&
+          ball_bounding_box.y + ball_bounding_box.h > paddle_bounding_box.y)) {
+
+      ball_velocity.x *= -1;
+      ball_velocity.y *= -1;
+
+      }
+    };
+
+    check_collision(paddle_one);
+    check_collision(paddle_two);
+  };
+
   while(1) {
     while(SDL_PollEvent(&e)) {
       if(e.type == SDL_KEYDOWN) {
@@ -185,12 +219,15 @@ int main(int argc, char** argv) {
 
     ball_physics_system();
     ball_check_boundary_collision_system();
+    check_ball_collision_with_paddle_system();
 
     SDL_RenderClear(renderer);
     render_ball_system(); 
     render_paddle_one_system();
     render_paddle_two_system();
     render_pong_debug_system();
+    render_paddle_debug_system(paddle_one);
+    render_paddle_debug_system(paddle_two);
     SDL_RenderPresent(renderer);
   } 
   return 0;
