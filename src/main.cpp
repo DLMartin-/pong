@@ -68,6 +68,7 @@ int main(int argc, char** argv) {
   acorn::ecs::entity_pool pool{};
   acorn::ecs::component_store components {};
 
+  auto const play_area = pool.create_entity();
   auto const ball = pool.create_entity();
   auto const paddle_one = pool.create_entity();
   auto const paddle_two = pool.create_entity();
@@ -93,17 +94,21 @@ int main(int argc, char** argv) {
   components.insert_component(paddle_two, paddle_two_texture);
 
   //setup ball
-  position_t ball_position {.x = 15.f, .y = 300.f};
+  position_t ball_position {.x = 325.f, .y = 600.f};
   components.insert_component(ball, ball_position);
 
   velocity_t ball_velocity {.x = .09f, .y = .25f};
   components.insert_component(ball, ball_velocity);
 
-  bounding_box_t ball_bounding_box {.x = 15.f, .y = 15.f, .w = 50.f, .h = 50.f};
+  bounding_box_t ball_bounding_box {.x = 325.f, .y = 1415.f, .w = 50.f, .h = 50.f};
   components.insert_component(ball, ball_bounding_box);
 
   texture_t ball_texture {.texture = tex};
   components.insert_component(ball, ball_texture);
+
+  //setup play area bounds
+  bounding_box_t player_area_box {.x = 6.f, .y = 0.f, .w = 688.f, .h = 1440.f};
+  components.insert_component(play_area, player_area_box);
 
   auto const ball_physics_system = [&components, ball]{
     auto& ball_position = components.get_component<position_t>(ball);
@@ -117,29 +122,54 @@ int main(int argc, char** argv) {
     ball_bounding_box.y = ball_position.y;
   };
 
-  auto const ball_check_boundary_collision_system = [&components, ball] {
+  auto const ball_check_boundary_collision_system = [&components, ball, play_area] {
     auto& ball_position = components.get_component<position_t>(ball);
     auto& ball_bounding_box = components.get_component<bounding_box_t>(ball);
     auto& ball_velocity = components.get_component<velocity_t>(ball);
 
-    if(ball_bounding_box.x < 0) {
-      ball_bounding_box.x = 0;
-      ball_position.x = 0;
+    auto const& play_area_bounding_box = components.get_component<bounding_box_t>(play_area);
+
+    if(ball_bounding_box.x < play_area_bounding_box.x) {
+      ball_bounding_box.x = play_area_bounding_box.x;
+      ball_position.x = play_area_bounding_box.x;
       ball_velocity.x *= -1;
-    } else if (ball_bounding_box.x + ball_bounding_box.w > 700) {
-      ball_bounding_box.x = 700 - ball_bounding_box.w - 1;
-      ball_position.x = 700 - ball_bounding_box.w - 1;
+    } else if (ball_bounding_box.x + ball_bounding_box.w > play_area_bounding_box.x + play_area_bounding_box.w) {
+      ball_bounding_box.x = play_area_bounding_box.x + play_area_bounding_box.w - ball_bounding_box.w - 1;
+      ball_position.x = play_area_bounding_box.x + play_area_bounding_box.w - ball_bounding_box.w - 1;
       ball_velocity.x *= -1;
     }
 
-    if(ball_bounding_box.y < 0) {
-      ball_bounding_box.y = 0;
-      ball_position.y = 0;
+    if(ball_bounding_box.y < play_area_bounding_box.y) {
+      ball_bounding_box.y = play_area_bounding_box.y;
+      ball_position.y = play_area_bounding_box.y;
       ball_velocity.y *= -1;
-    } else if(ball_bounding_box.y + ball_bounding_box.h > 1440) {
-      ball_bounding_box.y = 1440 - ball_bounding_box.h  - 1;
-      ball_position.y = 1440 - ball_bounding_box.h - 1;
+    } else if(ball_bounding_box.y + ball_bounding_box.h > play_area_bounding_box.y + play_area_bounding_box.h) {
+      ball_bounding_box.y = play_area_bounding_box.y + play_area_bounding_box.h - ball_bounding_box.h  - 1;
+      ball_position.y = play_area_bounding_box.y + play_area_bounding_box.h - ball_bounding_box.h - 1;
       ball_velocity.y *= -1;
+    }
+  };
+
+  auto const paddle_check_boundary_collision_system = [&components, play_area] (acorn::ecs::entity_t paddle) {
+    auto& ball_position = components.get_component<position_t>(paddle);
+    auto& ball_bounding_box = components.get_component<bounding_box_t>(paddle);
+
+    auto const& play_area_bounding_box = components.get_component<bounding_box_t>(play_area);
+
+    if(ball_bounding_box.x < play_area_bounding_box.x) {
+      ball_bounding_box.x = play_area_bounding_box.x;
+      ball_position.x = play_area_bounding_box.x;
+    } else if (ball_bounding_box.x + ball_bounding_box.w > play_area_bounding_box.x + play_area_bounding_box.w) {
+      ball_bounding_box.x = play_area_bounding_box.x + play_area_bounding_box.w - ball_bounding_box.w - 1;
+      ball_position.x = play_area_bounding_box.x + play_area_bounding_box.w - ball_bounding_box.w - 1;
+    }
+
+    if(ball_bounding_box.y < play_area_bounding_box.y) {
+      ball_bounding_box.y = play_area_bounding_box.y;
+      ball_position.y = play_area_bounding_box.y;
+    } else if(ball_bounding_box.y + ball_bounding_box.h > play_area_bounding_box.y + play_area_bounding_box.h) {
+      ball_bounding_box.y = play_area_bounding_box.y + play_area_bounding_box.h - ball_bounding_box.h  - 1;
+      ball_position.y = play_area_bounding_box.y + play_area_bounding_box.h - ball_bounding_box.h - 1;
     }
   };
 
@@ -172,6 +202,16 @@ int main(int argc, char** argv) {
     auto const ball_bounding_box = components.get_component<bounding_box_t>(ball);
 
     auto const rect = SDL_Rect{.x = static_cast<int>(ball_bounding_box.x), .y = static_cast<int>(ball_bounding_box.y), .w = static_cast<int>(ball_bounding_box.w), .h = static_cast<int>(ball_bounding_box.h)};
+
+    SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
+    SDL_RenderDrawRect(renderer, &rect);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+  };
+
+  auto const render_play_area_debug_system = [&components, renderer, play_area]() {
+    auto const bounding_box = components.get_component<bounding_box_t>(play_area);
+
+    auto const rect = SDL_Rect{.x = static_cast<int>(bounding_box.x), .y = static_cast<int>(bounding_box.y), .w = static_cast<int>(bounding_box.w), .h = static_cast<int>(bounding_box.h)};
 
     SDL_SetRenderDrawColor(renderer, 255, 0, 255, 255);
     SDL_RenderDrawRect(renderer, &rect);
@@ -249,6 +289,8 @@ int main(int argc, char** argv) {
       p2_bounding_box.x -= 1.0f;
       p2_position.x -= 1.0f;
     }
+    paddle_check_boundary_collision_system(paddle_one);
+    paddle_check_boundary_collision_system(paddle_two);
     ball_physics_system();
     ball_check_boundary_collision_system();
     check_ball_collision_with_paddle_system();
@@ -260,6 +302,7 @@ int main(int argc, char** argv) {
     render_pong_debug_system();
     render_paddle_debug_system(paddle_one);
     render_paddle_debug_system(paddle_two);
+    render_play_area_debug_system();
     SDL_RenderPresent(renderer);
   } 
   return 0;
