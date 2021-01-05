@@ -58,6 +58,12 @@ int main(int argc, char** argv) {
     std::cout << IMG_GetError() << std::endl;
   }
 
+  const uint8_t* keyboard_state = SDL_GetKeyboardState(nullptr);
+  if(!keyboard_state) {
+    std::cout << "Could not get Keyboard state." << std::endl;
+    return 3;
+  }
+
   SDL_Event e{};
   acorn::ecs::entity_pool pool{};
   acorn::ecs::component_store components {};
@@ -136,6 +142,7 @@ int main(int argc, char** argv) {
       ball_velocity.y *= -1;
     }
   };
+
 
   auto const render_ball_system = [&components, ball, renderer] {
     auto const ball_texture = components.get_component<texture_t>(ball);
@@ -217,6 +224,31 @@ int main(int argc, char** argv) {
       }
     }
 
+    //Poll keyboard for input
+    auto& p1_bounding_box = components.get_component<bounding_box_t>(paddle_one);
+    auto& p1_position = components.get_component<position_t>(paddle_one);
+  
+    auto& p2_bounding_box = components.get_component<bounding_box_t>(paddle_two);
+    auto& p2_position = components.get_component<position_t>(paddle_two);
+    if(keyboard_state[SDL_SCANCODE_S]) {
+      p1_bounding_box.x += 1.0f;
+      p1_position.x += 1.0f;
+    }
+  
+    if(keyboard_state[SDL_SCANCODE_A]) {
+      p1_bounding_box.x -= 1.0f;
+      p1_position.x -= 1.0f;
+    }
+    
+    if(keyboard_state[SDL_SCANCODE_L]) {
+      p2_bounding_box.x += 1.0f;
+      p2_position.x += 1.0f;
+    }
+  
+    if(keyboard_state[SDL_SCANCODE_K]) {
+      p2_bounding_box.x -= 1.0f;
+      p2_position.x -= 1.0f;
+    }
     ball_physics_system();
     ball_check_boundary_collision_system();
     check_ball_collision_with_paddle_system();
