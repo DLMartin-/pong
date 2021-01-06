@@ -32,6 +32,9 @@ struct texture_t {
 
 int main(int argc, char** argv) {
 
+  std::uint8_t p1_score {0};
+  std::uint8_t p2_score {0};
+
   if(auto const r = SDL_Init(SDL_INIT_EVERYTHING); r != 0) {
     std::puts("Error: Could not initialize SDL2.");
     return 1;
@@ -273,7 +276,7 @@ int main(int argc, char** argv) {
     check_collision(paddle_two);
   };
 
-  auto const check_ball_collision_with_score_area_system = [&components, ball, player_one_score_area, player_two_score_area] {
+  auto const check_ball_collision_with_score_area_system = [&p1_score, &p2_score, &components, ball, player_one_score_area, player_two_score_area] {
     auto const check_collision = [&components, ball](acorn::ecs::entity_t paddle) {
       auto& ball_bounding_box = components.get_component<bounding_box_t>(ball);
       auto& ball_velocity = components.get_component<velocity_t>(ball);
@@ -293,11 +296,20 @@ int main(int argc, char** argv) {
           ball_bounding_box.y = 600.f;
 
           ball_velocity.y *= -1;
+
+          return true;
       }
+      return false;
     };
 
-    check_collision(player_one_score_area);
-    check_collision(player_two_score_area);
+    if(check_collision(player_one_score_area)) {
+      p1_score += 1;
+      std::cout << "Player One score: " << static_cast<int>(p1_score) << "\n";
+    }
+    if(check_collision(player_two_score_area)) {
+      p2_score += 1;
+      std::cout << "Player Two score: " << static_cast<int>(p2_score) << "\n";
+    }
   };
 
   while(1) {
